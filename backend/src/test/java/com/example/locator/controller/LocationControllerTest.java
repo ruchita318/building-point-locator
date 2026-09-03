@@ -1,6 +1,5 @@
-package com.example.locator;
+package com.example.locator.controller;
 
-import com.example.locator.controller.LocationController;
 import com.example.locator.dto.LocationResponse;
 import com.example.locator.service.LocationService;
 import org.junit.jupiter.api.BeforeEach;

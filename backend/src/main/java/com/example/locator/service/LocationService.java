@@ -17,10 +17,21 @@ public class LocationService {
 
     private final BuildingLocationRepository repository;
 
+    /**
+     * Creates the service with the repository that performs spatial floor lookups.
+     *
+     * @param repository repository used to query candidate building floors
+     */
     public LocationService(BuildingLocationRepository repository) {
         this.repository = repository;
     }
 
+    /**
+     * Resolves a validated 3D point to the first matching building floor.
+     *
+     * @param point request containing x, y and z coordinates
+     * @return successful location response when a floor matches, otherwise a not-found response
+     */
     @Transactional(readOnly = true)
     public LocationResponse locate(Point3DRequest point) {
         log.debug("Looking up location candidate for x={}, y={}, z={}", point.x(), point.y(), point.z());

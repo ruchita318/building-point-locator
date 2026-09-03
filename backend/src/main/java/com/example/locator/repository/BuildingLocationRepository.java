@@ -22,6 +22,11 @@ public class BuildingLocationRepository {
      * deliberately used instead of ST_Contains so points on the outline are
      * considered inside. Floor upper height is exclusive to avoid overlap at
      * shared boundaries.
+     *
+     * @param x horizontal coordinate in the same coordinate system as stored footprints
+     * @param y vertical coordinate in the same coordinate system as stored footprints
+     * @param z height coordinate compared against each floor's z range
+     * @return matching floor candidates ordered deterministically, limited to the first match
      */
     public List<LocationCandidate> findFloor(double x, double y, double z) {
         log.debug("Executing floor lookup query for x={}, y={}, z={}", x, y, z);

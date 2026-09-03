@@ -12,10 +12,20 @@ import org.springframework.core.env.Environment;
 public class BuildingPointLocatorApplication {
     private static final Logger log = LoggerFactory.getLogger(BuildingPointLocatorApplication.class);
 
+    /**
+     * Starts the Spring Boot application and initializes the web context.
+     *
+     * @param args command-line arguments passed to the application
+     */
     public static void main(String[] args) {
         SpringApplication.run(BuildingPointLocatorApplication.class, args);
     }
 
+    /**
+     * Logs the configured server port and active Spring profiles once startup is complete.
+     *
+     * @param event readiness event containing the initialized application context
+     */
     @EventListener(ApplicationReadyEvent.class)
     public void logStartup(ApplicationReadyEvent event) {
         Environment environment = event.getApplicationContext().getEnvironment();
