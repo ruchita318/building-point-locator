@@ -1,6 +1,6 @@
 # Building Point Locator — Angular + Spring Boot + PostgreSQL/PostGIS
 
-Full-stack 3D building/floor point locator with Angular 20, Java 21/Spring Boot 3.5, PostgreSQL/PostGIS, Flyway and Spring Security. The seeded data contains 15 buildings with 7–20 floors each.
+Full-stack 3D building/floor point locator with Angular 20, Java 21/Spring Boot 3.5, PostgreSQL/PostGIS, Flyway and Spring Security. The seeded data contains 18 buildings with square and octagonal footprints.
 
 ## Run with Docker
 
@@ -97,7 +97,7 @@ Health checks:
 Response:
 
 ```json
-{"found":true,"building":"Office building","floor":"Floor 0","message":"Point is inside Office building, Floor 0."}
+{"found":true,"building":"Office building","floor":"Floor 1","message":"Point is inside Office building, Floor 1."}
 ```
 
 PostGIS uses `ST_Covers`, so outline boundaries count as inside. Z uses lower-inclusive/upper-exclusive floor ranges to prevent overlap at shared floor boundaries.
@@ -109,7 +109,16 @@ cd building-point-locator-service
 mvn test
 ```
 
-Included tests cover service match/no-match behavior, controller success, missing/null coordinates and response construction. Repository calls are mocked, so these unit/controller tests do not need PostgreSQL. A production CI pipeline should additionally run PostGIS Testcontainers integration tests for the actual SQL and Flyway migrations.
+The default suite includes unit and component tests only. These cover service match/no-match behavior, controller success, missing/null coordinates, response construction and API wiring through Spring MVC and Spring Security with a mocked repository. They do not require Docker or a database.
+
+Run DB-backed integration tests with Docker running:
+
+```bash
+cd building-point-locator-service
+mvn verify -Pintegration-test
+```
+
+The integration profile uses `src/test/resources/application-integration-test.yml` and Testcontainers to start a real PostGIS database, run Flyway migrations, seed data and verify `/api/locate` through the controller, service, repository and spatial SQL.
 
 ## Frontend tests
 
@@ -126,6 +135,17 @@ npm run test:watch
 ```
 
 Included Angular tests cover rendering, success/not-found/error states and the exact `POST /api/locate` service request. The test target enables code coverage.
+
+## CI/CD pipeline
+
+GitHub Actions runs `.github/workflows/ci-cd.yml` on pull requests, pushes to `main` and manual dispatches. The pipeline stages are:
+
+1. Checkstyle and lint: `mvn checkstyle:check` for the backend and `npm run lint` for the frontend.
+2. Unit tests: backend tests excluding `*ComponentTest` and `*IntegrationTest`, plus `npm run test:unit`.
+3. Component tests: backend `*ComponentTest` classes.
+4. Integration tests: backend `*IntegrationTest` classes through the Maven `integration-test` profile, plus `npm run test:integration`.
+5. Docker image build: builds the root `Dockerfile` as `building-point-locator:${GITHUB_SHA}`.
+6. Fake Argo CD deployment: echoes the `argocd app set`, `argocd app sync` and `argocd app wait` commands without changing any cluster resources.
 
 ## Build without Docker
 

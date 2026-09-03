@@ -1,8 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { Subject, of, throwError } from 'rxjs';
 import { AppComponent } from './app.component';
-import { LocationService } from './location.service';
+import { LocationResponse, LocationService } from './location.service';
 
 describe('AppComponent', () => {
   let fixture: ComponentFixture<AppComponent>;
@@ -39,6 +39,39 @@ describe('AppComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('3D point is in building Office building and floor Floor 1');
     expect(fixture.nativeElement.textContent).toContain('Point is inside Office building, Floor 1.');
   });
+
+  it('submits edited coordinates and shows loading state until the response arrives', fakeAsync(() => {
+    const response = new Subject<LocationResponse>();
+    service.locate.and.returnValue(response.asObservable());
+    const [xInput, yInput, zInput] = fixture.nativeElement.querySelectorAll('input') as NodeListOf<HTMLInputElement>;
+
+    setInputValue(xInput, '42.5');
+    setInputValue(yInput, '7.25');
+    setInputValue(zInput, '-3');
+    tick();
+    fixture.detectChanges();
+
+    const form = fixture.nativeElement.querySelector('form') as HTMLFormElement;
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    fixture.detectChanges();
+
+    const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    expect(service.locate).toHaveBeenCalledWith({ x: 42.5, y: 7.25, z: -3 });
+    expect(button.disabled).toBeTrue();
+    expect(button.textContent).toContain('Searching');
+
+    response.next({
+      found: true,
+      building: 'Office building',
+      floor: 'Floor -1',
+      message: 'Point is inside Office building, Floor -1.'
+    });
+    response.complete();
+    fixture.detectChanges();
+
+    expect(button.disabled).toBeFalse();
+    expect(fixture.nativeElement.textContent).toContain('Floor -1');
+  }));
 
   it('shows not found state from a successful observable response', () => {
     service.locate.and.returnValue(of({
@@ -114,4 +147,9 @@ describe('AppComponent', () => {
 
     expect(fixture.nativeElement.textContent).toContain('Unable to query the location service. Please try again.');
   });
+
+  function setInputValue(input: HTMLInputElement, value: string): void {
+    input.value = value;
+    input.dispatchEvent(new Event('input'));
+  }
 });

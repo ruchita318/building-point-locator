@@ -8,6 +8,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "ng test --watch=false --browsers=ChromeHeadless",
+    "test:unit": "ng test --watch=false --browsers=ChromeHeadless --include=src/app/app.component.spec.ts --include=src/app/location.service.spec.ts",
+    "test:integration": "ng test --watch=false --browsers=ChromeHeadless --include=src/app/app.integration.spec.ts",
     "test:watch": "ng test"
   },
   "dependencies": {

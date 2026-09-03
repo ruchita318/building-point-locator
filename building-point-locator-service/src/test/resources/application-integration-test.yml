@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 4
+      minimum-idle: 1
+      connection-timeout: 10000
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    validate-on-migrate: true
+
+app:
+  security:
+    enabled: true
+    username: integration-user
+    password: integration-password
+  cors:
+    allowed-origins: http://localhost:4200
+
+logging:
+  file:
+    path: ${LOG_PATH:${java.io.tmpdir}/building-point-locator-test-logs}
+  level:
+    root: WARN
+    com.example.locator: INFO

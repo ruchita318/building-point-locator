@@ -213,3 +213,4 @@ INSERT INTO floors(building_id,name,footprint,min_z,max_z,floor_number) SELECT i
 INSERT INTO floors(building_id,name,footprint,min_z,max_z,floor_number) SELECT id,'Floor 7',ST_GeomFromText('SRID=0;POLYGON((185 100,185 127,213 127,213 100,185 100))',0),21,23.7,7 FROM buildings WHERE name='Building 15';
 INSERT INTO floors(building_id,name,footprint,min_z,max_z,floor_number) SELECT id,'Floor 8',ST_GeomFromText('SRID=0;POLYGON((185 100,185 127,213 127,213 100,185 100))',0),24,26.7,8 FROM buildings WHERE name='Building 15';
 INSERT INTO floors(building_id,name,footprint,min_z,max_z,floor_number) SELECT id,'Floor 9',ST_GeomFromText('SRID=0;POLYGON((188 103,188 124,210 124,210 103,188 103))',0),27,29.7,9 FROM buildings WHERE name='Building 15';
+

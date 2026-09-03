@@ -465,6 +465,114 @@ AI commands and tools used:
 - `npm run lint`
 - `npm test`
 
+### 12. Add Component And Integration Tests
+
+Date: 2026-09-03
+
+User request:
+
+> Add component and integration tests for both service and frontend
+
+Summary of AI changes:
+
+- Added a Spring-managed `LocationServiceComponentTest` for service component behavior with a mocked repository bean
+- Added `LocationApiIntegrationTest` to exercise HTTP Basic security, Spring MVC binding, controller handling, service behavior, and repository calls together
+- Extended `app.component.spec.ts` with form-editing and loading-state component coverage
+- Updated `location.service.spec.ts` so controller 404 responses are asserted as `HttpErrorResponse` values
+- Added `app.integration.spec.ts` to exercise `AppComponent` with the real Angular `LocationService` and `HttpTestingController`
+
+Important implementation parameters:
+
+- Backend integration tests deliberately mock `BuildingLocationRepository` and exclude datasource, JPA, and Flyway auto-configuration so they do not require a live PostgreSQL/PostGIS database
+- The backend integration test enables API security to verify authenticated locate calls and public health checks
+- Frontend integration tests submit the real Angular form and assert the generated `/api/locate` HTTP request and rendered response states
+- Existing unrelated staged/untracked worktree files were left untouched
+
+Verification:
+
+- Ran `mvn test` in the sandbox
+- Result: failed before test evaluation because Mockito/Byte Buddy could not self-attach inside the sandbox
+- Reran `mvn test` with approved execution outside the sandbox
+- Result: 20 tests passed, 0 failures, 0 errors
+- Ran `npm test` in the sandbox
+- Result: failed because Karma could not bind local port 9876 inside the sandbox
+- Reran `npm test` with approved local test-server access
+- Result: 13 tests passed, 0 failures
+- Ran `npm run lint`
+- Result: lint passed
+
+AI commands and tools used:
+
+- `pwd`
+- `find . -maxdepth 3 -type f`
+- `git status --short`
+- `find building-point-locator-service/src -type f`
+- `find frontend/src -type f`
+- `find . -name ...`
+- `sed -n ...`
+- `jar tf ... | grep MockitoBean`
+- `mkdir -p building-point-locator-service/src/test/java/com/example/locator/integration`
+- `mvn test`
+- `npm test`
+- `npm run lint`
+- `git diff -- ...`
+- `git diff --cached -- ...`
+- `git diff --stat`
+- `tail -n 120 AI_USAGE_SUMMARY.md`
+
+### 13. Split API Component Test And Add DB Integration Test
+
+Date: 2026-09-03
+
+User request:
+
+> This is ideally component test not integration test, Update this file to component test and Add new integration test which has separate test/application-integration-test.yml and actual instance of test DB
+
+Summary of AI changes:
+
+- Moved the mocked Spring MVC/API coverage into `LocationApiComponentTest`
+- Reworked `LocationApiIntegrationTest` into a true DB-backed integration test with no mocked repository
+- Added `src/test/resources/application-integration-test.yml` for the integration-test Spring profile
+- Added Testcontainers PostgreSQL/PostGIS dependencies and a Maven Failsafe `integration-test` profile
+- Configured Surefire to exclude `*IntegrationTest` classes from the default `mvn test` suite
+- Updated `README.md` with separate default and DB-backed test commands
+- Corrected the README sample response for `{"x":15,"y":15,"z":1}` to the seeded `Floor 1`
+
+Important implementation parameters:
+
+- The DB integration test uses the `postgis/postgis:16-3.5` Docker image as a PostgreSQL-compatible Testcontainers database
+- The integration test starts a real database, lets Flyway create the schema and seed data, then verifies `/api/locate` through MVC, security, service, repository and PostGIS SQL
+- Testcontainers was pinned to `2.0.5` because Docker Desktop 29 rejected the Spring Boot managed Testcontainers `1.21.3` Docker Java fallback API
+- `mvn test` runs unit and component tests only; `mvn verify -Pintegration-test` runs the DB-backed integration test through Failsafe
+- Existing unrelated staged/untracked worktree files were left untouched
+
+Verification:
+
+- Ran `mvn test` with approved execution
+- Result: 18 tests passed, 0 failures, 0 errors
+- Ran `mvn verify -Pintegration-test` with approved execution
+- Result: default tests passed, 5 DB-backed integration tests passed, Checkstyle passed, build success
+- Initial integration verification with Testcontainers `1.21.3` failed against Docker Desktop 29 due stale Docker API fallback
+
+AI commands and tools used:
+
+- `pwd`
+- `git status --short`
+- `find building-point-locator-service/src -type f`
+- `sed -n ...`
+- `grep -R ...`
+- `find /Users/ruchitapatel/.m2/repository/org/testcontainers ...`
+- `mkdir -p building-point-locator-service/src/test/java/com/example/locator/component building-point-locator-service/src/test/resources`
+- `mvn test`
+- `mvn verify -Pintegration-test`
+- `printenv DOCKER_API_VERSION`
+- `docker version`
+- `env DOCKER_API_VERSION=1.40 mvn verify -Pintegration-test`
+- `env DOCKER_HOST=... DOCKER_API_VERSION=1.40 mvn verify -Pintegration-test`
+- `env DOCKER_HOST=... DOCKER_API_VERSION=1.55 mvn verify -Pintegration-test`
+- Official Testcontainers Java documentation lookup for the current Testcontainers dependency version
+- Testcontainers GitHub issue lookup for the Docker 29 client API compatibility failure
+
 ## Commands Run During AI Assistance
 
 - `pwd`
