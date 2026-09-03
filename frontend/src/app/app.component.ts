@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { LocationService, Point3D } from './location.service';
+import { ApiErrorResponse, LocationResponse, LocationService, Point3D } from './location.service';
 
 @Component({
   selector: 'app-root',
@@ -28,8 +29,8 @@ import { LocationService, Point3D } from './location.service';
           <div class="result" [class.success]="result.found" [class.empty]="!result.found">
             @if (result.found) {
               <span class="label">LOCATION FOUND</span>
-              <strong>{{ result.building }}</strong>
-              <span>{{ result.floor }}</span>
+              <strong>3D point is in building {{ result.building }} and floor {{ result.floor }}</strong>
+              <span class="message">{{ result.message }}</span>
             } @else {
               <strong>Not found</strong>
               <span>{{ result.message }}</span>
@@ -59,6 +60,7 @@ import { LocationService, Point3D } from './location.service';
     .result.success { background:#ecfdf3; color:#067647; }
     .result.empty { background:#fef3f2; color:#b42318; }
     .result strong { font-size:21px; }
+    .message { line-height:1.45; }
     .label { font-size:11px; font-weight:900; letter-spacing:.1em; }
     .error { margin-top:16px; padding:14px; border-radius:10px; background:#fef3f2; color:#b42318; }
     @media (max-width:520px) { .card{padding:24px;} .coordinates{grid-template-columns:1fr;} h1{font-size:27px;} }
@@ -67,7 +69,7 @@ import { LocationService, Point3D } from './location.service';
 export class AppComponent {
   private readonly locationService = inject(LocationService);
   point: Point3D = { x: 15, y: 15, z: 1 };
-  result: { found: boolean; building: string | null; floor: string | null; message: string } | null = null;
+  result: LocationResponse | null = null;
   loading = false;
   error = '';
 
@@ -77,7 +79,54 @@ export class AppComponent {
     this.error = '';
     this.locationService.locate(this.point).subscribe({
       next: value => { this.result = value; this.loading = false; },
-      error: () => { this.error = 'Unable to query the location service. Please try again.'; this.loading = false; }
+      error: err => this.handleLocateError(err)
     });
+  }
+
+  private handleLocateError(err: unknown): void {
+    this.loading = false;
+
+    if (err instanceof HttpErrorResponse) {
+      if (this.isLocationResponse(err.error)) {
+        this.result = err.error;
+        return;
+      }
+
+      if (this.isApiErrorResponse(err.error)) {
+        this.error = err.error.message;
+        return;
+      }
+    }
+
+    this.error = 'Unable to query the location service. Please try again.';
+  }
+
+  private isLocationResponse(value: unknown): value is LocationResponse {
+    if (!this.isRecord(value)) {
+      return false;
+    }
+
+    return typeof value['found'] === 'boolean'
+      && this.isNullableString(value['building'])
+      && this.isNullableString(value['floor'])
+      && typeof value['message'] === 'string';
+  }
+
+  private isApiErrorResponse(value: unknown): value is ApiErrorResponse {
+    if (!this.isRecord(value)) {
+      return false;
+    }
+
+    return typeof value['status'] === 'number'
+      && typeof value['error'] === 'string'
+      && typeof value['message'] === 'string';
+  }
+
+  private isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
+  }
+
+  private isNullableString(value: unknown): value is string | null {
+    return typeof value === 'string' || value === null;
   }
 }

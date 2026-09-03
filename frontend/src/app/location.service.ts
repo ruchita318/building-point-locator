@@ -9,6 +9,11 @@ export interface LocationResponse {
   floor: string | null;
   message: string;
 }
+export interface ApiErrorResponse {
+  status: number;
+  error: string;
+  message: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class LocationService {

@@ -1,2 +1,117 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing'; import { of, throwError } from 'rxjs'; import { AppComponent } from './app.component'; import { LocationService } from './location.service';
-describe('AppComponent',()=>{ let fixture:ComponentFixture<AppComponent>; let component:AppComponent; let service:jasmine.SpyObj<LocationService>; beforeEach(async()=>{ service=jasmine.createSpyObj<LocationService>('LocationService',['locate']); await TestBed.configureTestingModule({imports:[AppComponent],providers:[{provide:LocationService,useValue:service}]}).compileComponents(); fixture=TestBed.createComponent(AppComponent); component=fixture.componentInstance; fixture.detectChanges(); }); it('renders coordinate form',()=>{expect(fixture.nativeElement.textContent).toContain('Find a building & floor'); expect(fixture.nativeElement.querySelectorAll('input').length).toBe(3);}); it('shows successful location',()=>{ service.locate.and.returnValue(of({found:true,building:'Office building',floor:'Floor 1',message:'ok'})); component.locate(); fixture.detectChanges(); expect(fixture.nativeElement.textContent).toContain('Office building'); expect(fixture.nativeElement.textContent).toContain('Floor 1');}); it('shows not found state',()=>{service.locate.and.returnValue(of({found:false,building:null,floor:null,message:'The point is not inside any building floor.'})); component.locate(); fixture.detectChanges(); expect(fixture.nativeElement.textContent).toContain('Not found');}); it('shows friendly API error',()=>{service.locate.and.returnValue(throwError(()=>new Error('network'))); component.locate(); fixture.detectChanges(); expect(fixture.nativeElement.textContent).toContain('Unable to query the location service. Please try again.');}); });
+import { HttpErrorResponse } from '@angular/common/http';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { of, throwError } from 'rxjs';
+import { AppComponent } from './app.component';
+import { LocationService } from './location.service';
+
+describe('AppComponent', () => {
+  let fixture: ComponentFixture<AppComponent>;
+  let component: AppComponent;
+  let service: jasmine.SpyObj<LocationService>;
+
+  beforeEach(async () => {
+    service = jasmine.createSpyObj<LocationService>('LocationService', ['locate']);
+    await TestBed.configureTestingModule({
+      imports: [AppComponent],
+      providers: [{ provide: LocationService, useValue: service }]
+    }).compileComponents();
+    fixture = TestBed.createComponent(AppComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('renders coordinate form', () => {
+    expect(fixture.nativeElement.textContent).toContain('Find a building & floor');
+    expect(fixture.nativeElement.querySelectorAll('input').length).toBe(3);
+  });
+
+  it('shows successful location with the response message', () => {
+    service.locate.and.returnValue(of({
+      found: true,
+      building: 'Office building',
+      floor: 'Floor 1',
+      message: 'Point is inside Office building, Floor 1.'
+    }));
+
+    component.locate();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('3D point is in building Office building and floor Floor 1');
+    expect(fixture.nativeElement.textContent).toContain('Point is inside Office building, Floor 1.');
+  });
+
+  it('shows not found state from a successful observable response', () => {
+    service.locate.and.returnValue(of({
+      found: false,
+      building: null,
+      floor: null,
+      message: 'The point is not inside any building floor.'
+    }));
+
+    component.locate();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Not found');
+    expect(fixture.nativeElement.textContent).toContain('The point is not inside any building floor.');
+  });
+
+  it('shows not found state from LocationController 404 response body', () => {
+    service.locate.and.returnValue(throwError(() => new HttpErrorResponse({
+      status: 404,
+      error: {
+        found: false,
+        building: null,
+        floor: null,
+        message: 'The point is not inside any building floor.'
+      }
+    })));
+
+    component.locate();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Not found');
+    expect(fixture.nativeElement.textContent).toContain('The point is not inside any building floor.');
+    expect(fixture.nativeElement.textContent).not.toContain('Unable to query the location service. Please try again.');
+  });
+
+  it('shows LocationController validation error messages', () => {
+    service.locate.and.returnValue(throwError(() => new HttpErrorResponse({
+      status: 400,
+      error: {
+        status: 400,
+        error: 'Bad Request',
+        message: 'z must not be null'
+      }
+    })));
+
+    component.locate();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('z must not be null');
+  });
+
+  it('shows LocationController server error messages', () => {
+    service.locate.and.returnValue(throwError(() => new HttpErrorResponse({
+      status: 500,
+      error: {
+        status: 500,
+        error: 'Internal Server Error',
+        message: 'Unable to process the location lookup request.'
+      }
+    })));
+
+    component.locate();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Unable to process the location lookup request.');
+  });
+
+  it('shows friendly API error for non-controller failures', () => {
+    service.locate.and.returnValue(throwError(() => new Error('network')));
+
+    component.locate();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Unable to query the location service. Please try again.');
+  });
+});

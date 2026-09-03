@@ -378,6 +378,93 @@ AI commands and tools used:
 - `mvn -DskipTests verify`
 - `mvn test`
 
+### 10. Update Frontend Location Result And Error Display
+
+Date: 2026-09-03
+
+User requests:
+
+> Update frontend to show 3D point in building (building name) and floor (floor name) when response is received along with same message
+
+> Update frontend to handle error returned from LocationController#
+
+Summary of AI changes:
+
+- Updated the Angular success result state in `frontend/src/app/app.component.ts`
+- Success responses now show `3D point is in building {building} and floor {floor}`
+- The original backend response `message` is displayed under the success summary
+- Updated the component to handle `HttpErrorResponse` bodies returned by the backend controller
+- Added an `ApiErrorResponse` interface in `frontend/src/app/location.service.ts`
+- Treated a `404` response containing `LocationResponse.notFound()` as the normal not-found result state
+- Displayed backend controller error messages for `400 Bad Request` and `500 Internal Server Error` response bodies
+- Kept the generic friendly message for network failures or non-controller errors
+- Reformatted and expanded `frontend/src/app/app.component.spec.ts` coverage
+
+Important implementation parameters:
+
+- Backend API behavior was not changed
+- The frontend now recognizes both controller response shapes: `LocationResponse` and `ApiErrorResponse`
+- Shape guards are used before reading response-body fields from unknown errors
+- Not-found responses can be rendered whether they arrive as a successful observable value or as an HTTP `404` error body
+
+Verification:
+
+- Ran `npm test` with approved local test-server access
+- Result: 9 tests passed, 0 failures
+- Ran `npm run lint`
+- Result: lint passed
+- Ran `npm run build -- --progress=false` with approved execution
+- Result: production bundle built successfully
+
+AI commands and tools used:
+
+- `find frontend/src -type f`
+- `find frontend/src -type f -name '*.ts' -o -name '*.html' -o -name '*.css'`
+- `git status --short frontend`
+- `nl -ba frontend/src/app/app.component.ts`
+- `nl -ba frontend/src/app/app.component.spec.ts`
+- `nl -ba frontend/src/app/location.service.ts`
+- `nl -ba frontend/src/app/location.service.spec.ts`
+- `nl -ba frontend/package.json`
+- `nl -ba frontend/angular.json`
+- `git diff -- frontend/src/app/app.component.ts frontend/src/app/app.component.spec.ts`
+- `npm test`
+- `npm run lint`
+- `npm run build -- --progress=false`
+
+### 11. Format Location Service Spec
+
+Date: 2026-09-03
+
+User request:
+
+> format file location.service.spec.ts
+
+Summary of AI changes:
+
+- Reformatted `frontend/src/app/location.service.spec.ts`
+- Split one-line imports, setup, expectations, and response fixtures into readable blocks
+- Kept the existing service-test behavior and assertions unchanged
+
+Important implementation parameters:
+
+- This was a formatting-only frontend test change
+- No application source behavior was changed
+
+Verification:
+
+- Ran `npm run lint`
+- Result: lint passed
+- Ran `npm test` with approved local test-server access
+- Result: 9 tests passed, 0 failures
+
+AI commands and tools used:
+
+- `nl -ba frontend/src/app/location.service.spec.ts`
+- `git status --short frontend/src/app/location.service.spec.ts AI_USAGE_SUMMARY.md`
+- `npm run lint`
+- `npm test`
+
 ## Commands Run During AI Assistance
 
 - `pwd`
