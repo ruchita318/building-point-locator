@@ -16,7 +16,7 @@ Prefer managed PostgreSQL/PostGIS with multi-zone failover, automated backups, p
 Use Micrometer/OpenTelemetry, Prometheus/Grafana and centralized structured logs. The application writes console logs and a rolling file log configurable with `LOG_PATH` and `LOG_FILE`; ship these to your centralized logging platform in production. Track request count, errors, p95/p99 latency, spatial query latency, DB pool saturation, PostgreSQL CPU/IO, JVM heap/GC and container restarts.
 
 ## Reliability
-Use readiness/liveness probes, graceful shutdown, explicit timeouts, bounded retries and SLO-driven alerting. Example targets (to be validated by load tests): 99.9% availability, p95 locate latency under 200 ms, 5xx below 0.1%.
+Use readiness/liveness probes, graceful shutdown, explicit timeouts, bounded retries and SLO-driven alerting. The service exposes `/api/health`, `/api/health/live`, `/api/health/ready`, and the equivalent Spring Boot Actuator health endpoints. Example targets (to be validated by load tests): 99.9% availability, p95 locate latency under 200 ms, 5xx below 0.1%.
 
 ## Caching
 Do not add Redis by default. First measure PostGIS with the spatial index. If repeated identical/quantized point lookups are common, consider Caffeine or Redis with a clear invalidation strategy when geometry changes.

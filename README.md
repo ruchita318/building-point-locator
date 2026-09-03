@@ -81,6 +81,13 @@ Production enables stateless Spring Security HTTP Basic for `/api/**` by default
 
 ## API
 
+Health checks:
+
+- `GET /api/health`: aggregate application health, returns `200 OK` when live and ready or `503 Service Unavailable`
+- `GET /api/health/live`: liveness probe, returns `200 OK` when the process is alive or `503 Service Unavailable`
+- `GET /api/health/ready`: readiness probe, returns `200 OK` when the service can accept traffic or `503 Service Unavailable`
+- Spring Boot Actuator health remains available at `/actuator/health`, `/actuator/health/liveness`, and `/actuator/health/readiness`
+
 `POST /api/locate`
 
 ```json

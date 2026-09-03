@@ -278,6 +278,106 @@ AI commands and tools used:
 - `git diff -- Dockerfile README.md frontend/nginx.conf AI_USAGE_SUMMARY.md`
 - `git status --short`
 
+### 8. Add Healthcheck Endpoints
+
+Date: 2026-09-03
+
+User request:
+
+> Add healthcheck endpoints
+
+Summary of AI changes:
+
+- Added `HealthController` under `building-point-locator-service/src/main/java/com/example/locator/controller`
+- Added `GET /api/health` for aggregate application health
+- Added `GET /api/health/live` for liveness checks
+- Added `GET /api/health/ready` for readiness checks
+- Used Spring Boot `ApplicationAvailability` so responses reflect current liveness/readiness state
+- Updated `SecurityConfig` so `/api/health` and `/api/health/**` are allowed without authentication when API security is enabled
+- Added focused `HealthControllerTest` coverage for healthy, not-ready, and broken-liveness responses
+- Documented the endpoints in `README.md` and `PRODUCTION.md`
+
+Important implementation parameters:
+
+- Aggregate health returns `200 OK` only when liveness is `CORRECT` and readiness is `ACCEPTING_TRAFFIC`
+- Liveness returns `503 Service Unavailable` when liveness is `BROKEN`
+- Readiness returns `503 Service Unavailable` when readiness is `REFUSING_TRAFFIC`
+- Existing Spring Boot Actuator endpoints remain available at `/actuator/health`, `/actuator/health/liveness`, and `/actuator/health/readiness`
+- Health endpoints intentionally return compact JSON payloads suitable for load balancers and smoke tests
+
+Verification:
+
+- Ran `mvn clean compile`
+- Result: build success
+- Ran `mvn -Dtest=HealthControllerTest test`
+- Result: 3 tests passed, 0 failures, 0 errors
+- Ran `mvn -DskipTests verify`
+- Result: build success, jar packaging completed, and Checkstyle passed with 0 violations
+- Ran full `mvn test` outside the sandbox for existing Mockito/Byte Buddy JVM attach support
+- Result: 13 tests passed, 0 failures, 0 errors
+
+AI commands and tools used:
+
+- `find building-point-locator-service/src/main/java -type f -name '*.java'`
+- `nl -ba building-point-locator-service/src/main/resources/application.yml`
+- `nl -ba building-point-locator-service/src/main/java/com/example/locator/config/SecurityConfig.java`
+- `nl -ba building-point-locator-service/pom.xml`
+- `git status --short`
+- `nl -ba building-point-locator-service/src/test/java/com/example/locator/controller/LocationControllerTest.java`
+- `nl -ba building-point-locator-service/src/test/java/com/example/locator/service/LocationServiceTest.java`
+- `nl -ba building-point-locator-service/src/test/java/com/example/locator/LocationResponseTest.java`
+- `nl -ba building-point-locator-service/src/main/java/com/example/locator/controller/LocationController.java`
+- `nl -ba building-point-locator-service/src/main/java/com/example/locator/config/WebConfig.java`
+- `find /Users/ruchitapatel/.m2/repository/org/springframework/boot -path '*spring-boot-*.jar' -name 'spring-boot-*.jar'`
+- `javap -classpath ... org.springframework.boot.availability.ApplicationAvailability`
+- `mvn clean compile`
+- `mvn -Dtest=HealthControllerTest test`
+- `find building-point-locator-service/src/main/java -name '*.java' -exec awk 'length($0)>140 ...' {} +`
+- `mvn -DskipTests verify`
+- `mvn test`
+- `git diff -- building-point-locator-service/src/main/java/com/example/locator/controller/HealthController.java building-point-locator-service/src/main/java/com/example/locator/config/SecurityConfig.java building-point-locator-service/src/test/java/com/example/locator/controller/HealthControllerTest.java README.md PRODUCTION.md`
+- `nl -ba building-point-locator-service/src/main/java/com/example/locator/controller/HealthController.java`
+- `nl -ba building-point-locator-service/src/test/java/com/example/locator/controller/HealthControllerTest.java`
+- `git diff --stat`
+
+### 9. Rename Logger Constants
+
+Date: 2026-09-03
+
+User request:
+
+> Rename all `static final Logger` object from log to LOGGER
+
+Summary of AI changes:
+
+- Renamed all `private static final Logger log` fields in service Java sources to `LOGGER`
+- Updated all matching logger call sites from `log.debug/info/warn/error(...)` to `LOGGER.debug/info/warn/error(...)`
+- Kept logger factories, messages, and behavior unchanged
+
+Important implementation parameters:
+
+- Scope was limited to `building-point-locator-service/src/main/java`
+- No test or generated files needed logger renaming
+- The uppercase constant name aligns with Java constant naming conventions for `static final` fields
+
+Verification:
+
+- Checked that no `static final Logger log` or `log.` references remain in service Java sources
+- Ran `mvn -DskipTests verify`
+- Result: build success, jar packaging completed, and Checkstyle passed with 0 violations
+- Ran full `mvn test` outside the sandbox for existing Mockito/Byte Buddy JVM attach support
+- Result: 13 tests passed, 0 failures, 0 errors
+
+AI commands and tools used:
+
+- `grep -RIn "static final Logger log\\|\\blog\\." building-point-locator-service/src/main/java building-point-locator-service/src/test/java`
+- `git status --short`
+- `find building-point-locator-service/src/main/java -name '*.java' -type f`
+- `grep -RIn "static final Logger LOGGER\\|\\bLOGGER\\." building-point-locator-service/src/main/java`
+- `find building-point-locator-service/src/main/java -name '*.java' -exec awk 'length($0)>140 ...' {} +`
+- `mvn -DskipTests verify`
+- `mvn test`
+
 ## Commands Run During AI Assistance
 
 - `pwd`

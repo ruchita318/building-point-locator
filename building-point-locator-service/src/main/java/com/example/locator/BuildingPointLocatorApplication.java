@@ -10,7 +10,7 @@ import org.springframework.core.env.Environment;
 
 @SpringBootApplication
 public class BuildingPointLocatorApplication {
-    private static final Logger log = LoggerFactory.getLogger(BuildingPointLocatorApplication.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BuildingPointLocatorApplication.class);
 
     /**
      * Starts the Spring Boot application and initializes the web context.
@@ -31,6 +31,6 @@ public class BuildingPointLocatorApplication {
         Environment environment = event.getApplicationContext().getEnvironment();
         String port = environment.getProperty("server.port", "8080");
         String profiles = String.join(",", environment.getActiveProfiles());
-        log.info("Building Point Locator started on port {} with active profiles [{}]", port, profiles);
+        LOGGER.info("Building Point Locator started on port {} with active profiles [{}]", port, profiles);
     }
 }

@@ -9,7 +9,7 @@ import java.util.List;
 
 @Repository
 public class BuildingLocationRepository {
-    private static final Logger log = LoggerFactory.getLogger(BuildingLocationRepository.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BuildingLocationRepository.class);
 
     private final JdbcTemplate jdbc;
 
@@ -29,7 +29,7 @@ public class BuildingLocationRepository {
      * @return matching floor candidates ordered deterministically, limited to the first match
      */
     public List<LocationCandidate> findFloor(double x, double y, double z) {
-        log.debug("Executing floor lookup query for x={}, y={}, z={}", x, y, z);
+        LOGGER.debug("Executing floor lookup query for x={}, y={}, z={}", x, y, z);
         String sql = """
             SELECT b.id, b.name, f.id, f.name
             FROM floors f
@@ -43,7 +43,7 @@ public class BuildingLocationRepository {
                 (rs, rowNum) -> new LocationCandidate(
                         rs.getLong(1), rs.getString(2), rs.getLong(3), rs.getString(4)),
                 z, z, x, y);
-        log.debug("Floor lookup query returned {} candidate(s)", candidates.size());
+        LOGGER.debug("Floor lookup query returned {} candidate(s)", candidates.size());
         return candidates;
     }
 }

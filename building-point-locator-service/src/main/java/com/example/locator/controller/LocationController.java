@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api")
 public class LocationController {
-    private static final Logger log = LoggerFactory.getLogger(LocationController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LocationController.class);
 
     private final LocationService service;
 
@@ -41,9 +41,9 @@ public class LocationController {
      */
     @PostMapping("/locate")
     public ResponseEntity<LocationResponse> locate(@Valid @RequestBody Point3DRequest point) {
-        log.debug("Received location lookup request for coordinates x={}, y={}, z={}", point.x(), point.y(), point.z());
+        LOGGER.debug("Received location lookup request for coordinates x={}, y={}, z={}", point.x(), point.y(), point.z());
         LocationResponse response = service.locate(point);
-        log.info("Location lookup completed: found={}", response.found());
+        LOGGER.info("Location lookup completed: found={}", response.found());
         if (!response.found()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
@@ -62,7 +62,7 @@ public class LocationController {
                 .findFirst()
                 .map(this::formatFieldError)
                 .orElse("Request validation failed.");
-        log.warn("Invalid location lookup request: {}", message);
+        LOGGER.warn("Invalid location lookup request: {}", message);
         return ResponseEntity.badRequest().body(new ApiErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 "Bad Request",
@@ -78,7 +78,7 @@ public class LocationController {
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiErrorResponse> handleUnreadableRequest(HttpMessageNotReadableException exception) {
-        log.warn("Invalid location lookup request body: {}", exception.getMostSpecificCause().getMessage());
+        LOGGER.warn("Invalid location lookup request body: {}", exception.getMostSpecificCause().getMessage());
         return ResponseEntity.badRequest().body(new ApiErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 "Bad Request",
@@ -94,7 +94,7 @@ public class LocationController {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleUnexpectedException(Exception exception) {
-        log.error("Unexpected error while processing location lookup", exception);
+        LOGGER.error("Unexpected error while processing location lookup", exception);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "Internal Server Error",

@@ -18,7 +18,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 public class SecurityConfig {
-    private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SecurityConfig.class);
 
     /**
      * Builds the HTTP security rules for the application.
@@ -37,7 +37,7 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         if (enabled) {
-            log.info("HTTP Basic security is enabled for /api/**");
+            LOGGER.info("HTTP Basic security is enabled for /api/**");
             http.authorizeHttpRequests(a -> a
                             .requestMatchers(
                                     "/",
@@ -46,13 +46,15 @@ public class SecurityConfig {
                                     "/*.js",
                                     "/*.css",
                                     "/assets/**",
-                                    "/actuator/health/**"
+                                    "/actuator/health/**",
+                                    "/api/health",
+                                    "/api/health/**"
                             ).permitAll()
                             .requestMatchers("/api/**").authenticated()
                             .anyRequest().permitAll())
                     .httpBasic(Customizer.withDefaults());
         } else {
-            log.warn("Application security is disabled; all requests are permitted");
+            LOGGER.warn("Application security is disabled; all requests are permitted");
             http.authorizeHttpRequests(a -> a.anyRequest().permitAll());
         }
 
@@ -73,7 +75,7 @@ public class SecurityConfig {
             @Value("${app.security.password:local-password}") String password,
             PasswordEncoder encoder
     ) {
-        log.info("Configuring in-memory API user '{}'", username);
+        LOGGER.info("Configuring in-memory API user '{}'", username);
         return new InMemoryUserDetailsManager(
                 User.withUsername(username).password(encoder.encode(password)).roles("API").build()
         );

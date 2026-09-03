@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @Service
 public class LocationService {
-    private static final Logger log = LoggerFactory.getLogger(LocationService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LocationService.class);
 
     private final BuildingLocationRepository repository;
 
@@ -34,17 +34,17 @@ public class LocationService {
      */
     @Transactional(readOnly = true)
     public LocationResponse locate(Point3DRequest point) {
-        log.debug("Looking up location candidate for x={}, y={}, z={}", point.x(), point.y(), point.z());
+        LOGGER.debug("Looking up location candidate for x={}, y={}, z={}", point.x(), point.y(), point.z());
         Optional<LocationCandidate> candidate = repository.findFloor(point.x(), point.y(), point.z()).stream()
                 .findFirst();
 
         if (candidate.isPresent()) {
             LocationCandidate match = candidate.get();
-            log.info("Point matched buildingId={}, floorId={}", match.buildingId(), match.floorId());
+            LOGGER.info("Point matched buildingId={}, floorId={}", match.buildingId(), match.floorId());
             return LocationResponse.found(match.buildingName(), match.floorName());
         }
 
-        log.info("No building floor matched requested point");
+        LOGGER.info("No building floor matched requested point");
         return LocationResponse.notFound();
     }
 }
