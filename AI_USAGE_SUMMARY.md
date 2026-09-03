@@ -7,6 +7,7 @@ This file records the AI-assisted development conversation for the Building Poin
 - Project path: `/Users/ruchitapatel/Downloads/building-point-locator`
 - Application stack: Angular frontend, Spring Boot backend, PostgreSQL/PostGIS database
 - Backend runtime: Java 21, Spring Boot 3.5.5, Maven
+- Backend module path: `building-point-locator-service`
 - Frontend runtime: Angular 20, Node.js/npm
 - Current working timezone from environment: Europe/Berlin
 - Conversation date: 2026-09-03
@@ -228,6 +229,54 @@ AI commands and tools used:
 - `git status --short AI_USAGE_SUMMARY.md`
 - `tail -n 140 AI_USAGE_SUMMARY.md`
 - `git diff -- AI_USAGE_SUMMARY.md`
+
+### 7. Rename Backend Module Directory
+
+Date: 2026-09-03
+
+User request:
+
+> rename backend - building-point-locator-service
+
+Summary of AI changes:
+
+- Renamed the backend module directory from `backend` to `building-point-locator-service`
+- Updated the root `Dockerfile` to copy Maven files and source code from `building-point-locator-service`
+- Renamed the backend build stage alias in the root `Dockerfile` from `backend-build` to `service-build`
+- Updated local backend service commands in `README.md`
+- Updated the standalone frontend NGINX upstream from `backend:8080` to `building-point-locator-service:8080`
+
+Important implementation parameters:
+
+- Maven artifact coordinates were left unchanged as `com.example:building-point-locator:1.0.0`
+- Historical AI usage entries that mention old `backend/...` paths were left as records of prior work
+- Generated build output and log files moved with the renamed directory
+
+Verification:
+
+- Ran `mvn -DskipTests verify` from `building-point-locator-service`
+- Result: build success, jar packaging completed, and Checkstyle passed with 0 violations
+
+AI commands and tools used:
+
+- `find . -maxdepth 3 -type f`
+- `grep -RIn "backend" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=target --exclude-dir=.angular --exclude=package-lock.json`
+- `git status --short`
+- `nl -ba docker-compose.yml`
+- `nl -ba Dockerfile`
+- `nl -ba frontend/nginx.conf`
+- `nl -ba README.md`
+- `nl -ba PRODUCTION.md`
+- `nl -ba .gitignore`
+- `nl -ba frontend/Dockerfile`
+- `nl -ba frontend/proxy.conf.json`
+- `find backend -maxdepth 2 -type d`
+- `mv backend building-point-locator-service`
+- `find building-point-locator-service/src -type f`
+- `mvn -DskipTests verify`
+- `grep -RIn "backend/\\|cd backend\\|backend:" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=target --exclude-dir=.angular --exclude-dir=.idea --exclude=package-lock.json --exclude='*.log' --exclude=AI_USAGE_SUMMARY.md`
+- `git diff -- Dockerfile README.md frontend/nginx.conf AI_USAGE_SUMMARY.md`
+- `git status --short`
 
 ## Commands Run During AI Assistance
 

@@ -22,10 +22,10 @@ CREATE DATABASE building_locator OWNER locator;
 CREATE EXTENSION IF NOT EXISTS postgis;
 ```
 
-Start backend:
+Start backend service:
 
 ```bash
-cd backend
+cd building-point-locator-service
 mvn spring-boot:run
 ```
 
@@ -98,7 +98,7 @@ PostGIS uses `ST_Covers`, so outline boundaries count as inside. Z uses lower-in
 ## Backend tests
 
 ```bash
-cd backend
+cd building-point-locator-service
 mvn test
 ```
 
@@ -125,7 +125,7 @@ Included Angular tests cover rendering, success/not-found/error states and the e
 Backend:
 
 ```bash
-cd backend
+cd building-point-locator-service
 mvn clean package
 java -jar target/building-point-locator-1.0.0.jar
 ```
