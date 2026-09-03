@@ -1,0 +1,161 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+env:
+  JAVA_VERSION: "21"
+  NODE_VERSION: "22"
+  IMAGE_NAME: building-point-locator
+
+jobs:
+  quality:
+    name: 1. Checkstyle and lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Run backend Checkstyle
+        working-directory: building-point-locator-service
+        run: mvn -B -ntp checkstyle:check
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run frontend lint
+        working-directory: frontend
+        run: npm run lint
+
+  unit_tests:
+    name: 2. Unit tests
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Run backend unit tests
+        working-directory: building-point-locator-service
+        run: mvn -B -ntp '-Dtest=!*ComponentTest,!*IntegrationTest' test
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run frontend unit tests
+        working-directory: frontend
+        run: npm run test:unit
+
+  component_tests:
+    name: 3. Component tests
+    runs-on: ubuntu-latest
+    needs: unit_tests
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Run backend component tests
+        working-directory: building-point-locator-service
+        run: mvn -B -ntp '-Dtest=*ComponentTest' test
+
+  integration_tests:
+    name: 4. Integration tests
+    runs-on: ubuntu-latest
+    needs: component_tests
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Run backend integration tests
+        working-directory: building-point-locator-service
+        run: mvn -B -ntp -P integration-test '-Dtest=NoUnitTests' -Dsurefire.failIfNoSpecifiedTests=false -Dcheckstyle.skip=true verify
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run frontend integration tests
+        working-directory: frontend
+        run: npm run test:integration
+
+  build_docker_image:
+    name: 5. Build Docker image
+    runs-on: ubuntu-latest
+    needs: integration_tests
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build application image
+        run: docker build --file Dockerfile --tag "${IMAGE_NAME}:${GITHUB_SHA}" .
+
+      - name: Verify image exists locally
+        run: docker image inspect "${IMAGE_NAME}:${GITHUB_SHA}"
+
+  fake_argocd_deployment:
+    name: 6. Argo CD deployment (fake)
+    runs-on: ubuntu-latest
+    needs: build_docker_image
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    steps:
+      - name: Simulate Argo CD deployment
+        run: |
+          echo "Fake deployment only: no cluster credentials are used and no Kubernetes resources are changed."
+          echo "argocd app set building-point-locator --parameter image.tag=${GITHUB_SHA}"
+          echo "argocd app sync building-point-locator --prune"
+          echo "argocd app wait building-point-locator --health --timeout 300"
