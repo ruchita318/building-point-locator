@@ -30,7 +30,7 @@ describe('LocationService', () => {
       expect(response.building).toBe('Office building');
     });
 
-    const req = http.expectOne('/api/locate');
+    const req = http.expectOne('/api/v1/location/locate');
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual({ x: 15, y: 15, z: 1 });
     req.flush({
@@ -55,7 +55,7 @@ describe('LocationService', () => {
       }
     });
 
-    const req = http.expectOne('/api/locate');
+    const req = http.expectOne('/api/v1/location/locate');
     req.flush({
       found: false,
       building: null,

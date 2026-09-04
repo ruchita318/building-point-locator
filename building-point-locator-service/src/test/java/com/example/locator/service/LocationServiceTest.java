@@ -1,13 +1,16 @@
 package com.example.locator.service;
 
-import com.example.locator.dto.*;
-import com.example.locator.repository.*;
+import com.example.locator.dto.Point3DRequest;
+import com.example.locator.repository.BuildingLocationRepository;
+import com.example.locator.repository.LocationCandidate;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class LocationServiceTest {
     @Test

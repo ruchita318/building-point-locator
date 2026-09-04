@@ -20,6 +20,6 @@ export class LocationService {
   private readonly http = inject(HttpClient);
 
   locate(point: Point3D): Observable<LocationResponse> {
-    return this.http.post<LocationResponse>('/api/locate', point);
+    return this.http.post<LocationResponse>('/api/v1/location/locate', point);
   }
 }

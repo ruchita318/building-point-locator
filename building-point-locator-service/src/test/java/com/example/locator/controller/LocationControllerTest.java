@@ -29,7 +29,7 @@ class LocationControllerTest {
     void returnsLocationForValidPoint() throws Exception {
         when(service.locate(any())).thenReturn(LocationResponse.found("Office building", "Floor 0"));
 
-        mvc.perform(post("/api/locate")
+        mvc.perform(post("/api/v1/location/locate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"x\":15,\"y\":15,\"z\":1}"))
                 .andExpect(status().isOk())
@@ -42,7 +42,7 @@ class LocationControllerTest {
     void returnsNotFoundWhenPointDoesNotMatchAnyFloor() throws Exception {
         when(service.locate(any())).thenReturn(LocationResponse.notFound());
 
-        mvc.perform(post("/api/locate")
+        mvc.perform(post("/api/v1/location/locate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"x\":999,\"y\":999,\"z\":999}"))
                 .andExpect(status().isNotFound())
@@ -52,7 +52,7 @@ class LocationControllerTest {
 
     @Test
     void rejectsMissingCoordinate() throws Exception {
-        mvc.perform(post("/api/locate")
+        mvc.perform(post("/api/v1/location/locate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"x\":15,\"y\":15}"))
                 .andExpect(status().isBadRequest())
@@ -63,7 +63,7 @@ class LocationControllerTest {
 
     @Test
     void rejectsNullCoordinate() throws Exception {
-        mvc.perform(post("/api/locate")
+        mvc.perform(post("/api/v1/location/locate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"x\":15,\"y\":null,\"z\":1}"))
                 .andExpect(status().isBadRequest())
@@ -74,7 +74,7 @@ class LocationControllerTest {
 
     @Test
     void rejectsMalformedJson() throws Exception {
-        mvc.perform(post("/api/locate")
+        mvc.perform(post("/api/v1/location/locate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"x\":15"))
                 .andExpect(status().isBadRequest())
@@ -87,7 +87,7 @@ class LocationControllerTest {
     void returnsInternalServerErrorForUnexpectedFailure() throws Exception {
         when(service.locate(any())).thenThrow(new IllegalStateException("database unavailable"));
 
-        mvc.perform(post("/api/locate")
+        mvc.perform(post("/api/v1/location/locate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"x\":15,\"y\":15,\"z\":1}"))
                 .andExpect(status().isInternalServerError())

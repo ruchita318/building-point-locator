@@ -88,7 +88,7 @@ Health checks:
 - `GET /api/health/ready`: readiness probe, returns `200 OK` when the service can accept traffic or `503 Service Unavailable`
 - Spring Boot Actuator health remains available at `/actuator/health`, `/actuator/health/liveness`, and `/actuator/health/readiness`
 
-`POST /api/locate`
+`POST /api/v1/location/locate`
 
 ```json
 {"x":15,"y":15,"z":1}
@@ -118,7 +118,7 @@ cd building-point-locator-service
 mvn verify -Pintegration-test
 ```
 
-The integration profile uses `src/test/resources/application-integration-test.yml` and Testcontainers to start a real PostGIS database, run Flyway migrations, seed data and verify `/api/locate` through the controller, service, repository and spatial SQL.
+The integration profile uses `src/test/resources/application-integration-test.yml` and Testcontainers to start a real PostGIS database, run Flyway migrations, seed data and verify `/api/v1/location/locate` through the controller, service, repository and spatial SQL.
 
 ## Frontend tests
 
@@ -134,7 +134,7 @@ Watch mode:
 npm run test:watch
 ```
 
-Included Angular tests cover rendering, success/not-found/error states and the exact `POST /api/locate` service request. The test target enables code coverage.
+Included Angular tests cover rendering, success/not-found/error states and the exact `POST /api/v1/location/locate` service request. The test target enables code coverage.
 
 ## CI/CD pipeline
 

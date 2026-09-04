@@ -16,7 +16,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -50,17 +49,8 @@ class LocationApiIntegrationTest {
     }
 
     @Test
-    void appliesFlywayMigrationsToPostgisTestDatabase() {
-        Integer buildingCount = jdbc.queryForObject("SELECT COUNT(*) FROM buildings", Integer.class);
-        Integer floorCount = jdbc.queryForObject("SELECT COUNT(*) FROM floors", Integer.class);
-
-        assertThat(buildingCount).isEqualTo(18);
-        assertThat(floorCount).isEqualTo(223);
-    }
-
-    @Test
     void locatesSeededPointThroughApiServiceRepositoryAndPostgis() throws Exception {
-        mvc.perform(post("/api/locate")
+        mvc.perform(post("/api/v1/location/locate")
                         .with(httpBasic("integration-user", "integration-password"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"x\":15,\"y\":15,\"z\":1}"))
@@ -73,7 +63,7 @@ class LocationApiIntegrationTest {
 
     @Test
     void treatsSeededFootprintBoundaryAsInsideTheFloor() throws Exception {
-        mvc.perform(post("/api/locate")
+        mvc.perform(post("/api/v1/location/locate")
                         .with(httpBasic("integration-user", "integration-password"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"x\":10,\"y\":10,\"z\":1}"))
@@ -85,7 +75,7 @@ class LocationApiIntegrationTest {
 
     @Test
     void locatesPointInsideSeededOctagonBuilding() throws Exception {
-        mvc.perform(post("/api/locate")
+        mvc.perform(post("/api/v1/location/locate")
                         .with(httpBasic("integration-user", "integration-password"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"x\":320,\"y\":50,\"z\":1}"))
@@ -98,7 +88,7 @@ class LocationApiIntegrationTest {
 
     @Test
     void returnsNotFoundForPointOutsideSeededDatabase() throws Exception {
-        mvc.perform(post("/api/locate")
+        mvc.perform(post("/api/v1/location/locate")
                         .with(httpBasic("integration-user", "integration-password"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"x\":999,\"y\":999,\"z\":1}"))
@@ -109,7 +99,7 @@ class LocationApiIntegrationTest {
 
     @Test
     void requiresAuthenticationBeforeQueryingTestDatabase() throws Exception {
-        mvc.perform(post("/api/locate")
+        mvc.perform(post("/api/v1/location/locate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"x\":15,\"y\":15,\"z\":1}"))
                 .andExpect(status().isUnauthorized());

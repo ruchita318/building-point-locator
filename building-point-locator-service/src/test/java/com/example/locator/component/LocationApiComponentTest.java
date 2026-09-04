@@ -47,7 +47,7 @@ class LocationApiComponentTest {
                 new LocationCandidate(1L, "Office building", 2L, "Floor 1")
         ));
 
-        mvc.perform(post("/api/locate")
+        mvc.perform(post("/api/v1/location/locate")
                         .with(httpBasic("component-user", "component-password"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"x\":15.5,\"y\":16.25,\"z\":1}"))
@@ -64,7 +64,7 @@ class LocationApiComponentTest {
     void returnsNotFoundPayloadThroughControllerAndService() throws Exception {
         when(repository.findFloor(999.0, 999.0, 99.0)).thenReturn(List.of());
 
-        mvc.perform(post("/api/locate")
+        mvc.perform(post("/api/v1/location/locate")
                         .with(httpBasic("component-user", "component-password"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"x\":999,\"y\":999,\"z\":99}"))
@@ -79,7 +79,7 @@ class LocationApiComponentTest {
 
     @Test
     void requiresAuthenticationForLocateWhenApiSecurityIsEnabled() throws Exception {
-        mvc.perform(post("/api/locate")
+        mvc.perform(post("/api/v1/location/locate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"x\":15,\"y\":15,\"z\":1}"))
                 .andExpect(status().isUnauthorized());
@@ -98,7 +98,7 @@ class LocationApiComponentTest {
 
     @Test
     void rejectsInvalidPayloadBeforeCallingRepository() throws Exception {
-        mvc.perform(post("/api/locate")
+        mvc.perform(post("/api/v1/location/locate")
                         .with(httpBasic("component-user", "component-password"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"x\":15,\"y\":15}"))
